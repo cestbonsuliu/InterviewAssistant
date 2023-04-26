@@ -1,1 +1,125 @@
+import sys
+import os
+import random
+
+from PyQt5.QtWidgets import QApplication,QMainWindow,QMessageBox,QDesktopWidget,QFileDialog,QLineEdit
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QThread, pyqtSignal
+
 from Gui import InterviewAssistantGui
+import parse_interview_questions
+
+
+# 设置面试题路径
+def setFilePath(mainUi,Ui):
+
+    # 弹出文件选择框
+    filename, _ = QFileDialog.getOpenFileName(mainUi, '选择文件', '.', 'Text Files (*.md)')
+
+    print(filename)
+
+    if filename:
+        Ui.lineEdit_3.setText(filename)
+
+
+# 设置录音保存路径
+def setSaveRecordPath(mainUi):
+
+    # 弹出文件选择框
+    fname = QFileDialog.getExistingDirectory(mainUi, '选择文件夹')
+
+    print(fname)
+
+    if fname:
+        # 将选中的文件夹路径显示在LineEdit上
+        mainUi.findChild(QLineEdit,"lineEdit_2").setText(fname)
+
+
+
+# 获取面试题
+def selectRandomQuestion(Ui):
+
+    path = Ui.lineEdit_3.text()
+
+    if os.path.exists(path):
+
+        try:
+            question_answer_list = parse_interview_questions.parse_markdown_file(path)
+            print(question_answer_list)
+        except Exception as e:
+            msgBox = QMessageBox()
+            msgBox.setText("读取文件失败")
+            msgBox.exec_()
+
+        # 随机获取一个问题
+        random_question = random.choice(question_answer_list)
+        question = random_question['question']
+        print(question)
+
+        Ui.lineEdit.setText(question)
+
+    else:
+        msgBox = QMessageBox()
+        msgBox.setText("选择的题库文件不合法!")
+        msgBox.exec_()
+
+
+
+
+# 获取面试题答案
+def getAnswer(Ui):
+
+    path = Ui.lineEdit_3.text()
+    question = Ui.lineEdit.text()
+
+    if os.path.exists(path):
+
+        try:
+            question_answer_list = parse_interview_questions.parse_markdown_file(path)
+            print(question_answer_list)
+        except Exception as e:
+            msgBox = QMessageBox()
+            msgBox.setText("读取文件失败")
+            msgBox.exec_()
+
+        # 获取问题获取问题答案字典元素
+        answer_dict = [qa for qa in question_answer_list if qa.get("question") == question][0]
+        answer = answer_dict.get("answer")
+        print(answer)
+
+        Ui.textEdit.setText(answer)
+
+    else:
+        msgBox = QMessageBox()
+        msgBox.setText("没有问题!")
+        msgBox.exec_()
+
+
+
+if __name__ == '__main__':
+    # 解决QTDesigner界面开发时预览和实际运行效果不同
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+
+    app = QApplication(sys.argv)
+    mainWindow = QMainWindow()
+
+    ui = InterviewAssistantGui.Ui_MainWindow()
+    # 向主窗口上添加控件
+    ui.setupUi(mainWindow)
+
+
+    ui.pushButton_8.clicked.connect(lambda: setFilePath(mainWindow,ui))
+    ui.pushButton_7.clicked.connect(lambda: setSaveRecordPath(mainWindow))
+    ui.pushButton.clicked.connect(lambda: selectRandomQuestion(ui))
+    ui.pushButton_4.clicked.connect(lambda: getAnswer(ui))
+
+
+
+
+    # 让窗口在屏幕中央显示,因为使用了win11状态栏透明工具,所以向上移动了30px
+    screen = QDesktopWidget().screenGeometry()
+    size = mainWindow.geometry()
+    mainWindow.move((screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2 - 30)
+
+    mainWindow.show()
+    sys.exit(app.exec_())
