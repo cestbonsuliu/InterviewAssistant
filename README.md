@@ -19,7 +19,7 @@
 
 # 常见面试题
 
-收集了一些常见面试题，见 [Frequently Asked Interview Questions](Frequently Asked Interview Questions) 文件夹
+收集了一些常见面试题，见 [Frequently Asked Interview Questions](https://github.com/cestbonsuliu/InterviewAssistant/blob/89de53ab1729acd331f5c4a3b5bebca969d25cd2/Frequently%20Asked%20Interview%20Questions) 文件夹
 
 注意:
 
