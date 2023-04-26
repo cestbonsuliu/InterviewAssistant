@@ -1,13 +1,16 @@
 import sys
 import os
 import random
+import datetime
 
 from PyQt5.QtWidgets import QApplication,QMainWindow,QMessageBox,QDesktopWidget,QFileDialog,QLineEdit
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtMultimedia
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from Gui import InterviewAssistantGui
 import parse_interview_questions
+
+
 
 
 # 设置面试题路径
@@ -39,11 +42,13 @@ def setSaveRecordPath(mainUi):
 # 获取面试题
 def selectRandomQuestion(Ui):
 
+    # 获取面试题路径
     path = Ui.lineEdit_3.text()
 
     if os.path.exists(path):
 
         try:
+            # 获取问题对字典列表
             question_answer_list = parse_interview_questions.parse_markdown_file(path)
             print(question_answer_list)
         except Exception as e:
@@ -57,6 +62,10 @@ def selectRandomQuestion(Ui):
         print(question)
 
         Ui.lineEdit.setText(question)
+
+        # 更改出题按钮
+        if Ui.lineEdit.text() != "问题":
+            Ui.pushButton.setText("下一题")
 
     else:
         msgBox = QMessageBox()
@@ -72,7 +81,7 @@ def getAnswer(Ui):
     path = Ui.lineEdit_3.text()
     question = Ui.lineEdit.text()
 
-    if os.path.exists(path):
+    if os.path.exists(path) and question != "问题":
 
         try:
             question_answer_list = parse_interview_questions.parse_markdown_file(path)
@@ -94,7 +103,62 @@ def getAnswer(Ui):
         msgBox.setText("没有问题!")
         msgBox.exec_()
 
+# 开始录音
+def startRecording(Ui,AudioRecorder):
 
+    question = Ui.lineEdit.text()
+    date  = datetime.date.today()
+    now = datetime.datetime.now()
+
+    if question != "问题":
+
+        # 配置录音设置
+        audioSettings = QtMultimedia.QAudioEncoderSettings()
+        audioSettings.setCodec("audio/amr")  # 设置编码格式
+        audioSettings.setQuality(QtMultimedia.QMultimedia.NormalQuality)  # 设置音质
+        AudioRecorder.setEncodingSettings(audioSettings)
+
+        # 设置录音保存位置
+        recording_path = Ui.lineEdit_2.text()
+        if recording_path:
+            outputPath = os.path.join(recording_path, f'{question}-{date}-{now.hour}-{now.minute}')
+        else:
+            #设置默认位置
+            if not os.path.isdir("../Recordings/"):
+                os.makedirs("../Recordings/")
+            recordings = os.path.abspath("../Recordings/")
+            outputPath = os.path.join(recordings, f'{question}-{date}-{now.hour}-{now.minute}')
+        print(outputPath)
+        AudioRecorder.setOutputLocation(QtCore.QUrl.fromLocalFile(outputPath))
+
+        # 开始录音
+        AudioRecorder.record()
+
+        # 更新按钮状态
+        Ui.pushButton_2.setText("正在录音")
+        Ui.pushButton_2.setEnabled(False)
+        Ui.pushButton_3.setEnabled(True)
+
+    else:
+        msgBox = QMessageBox()
+        msgBox.setText("没有问题!")
+        msgBox.exec_()
+
+# 停止录音
+def stopRecording(Ui,AudioRecorder):
+
+    if Ui.lineEdit.text() != "问题":
+
+        AudioRecorder.stop()
+
+        # 更新按钮状态
+        Ui.pushButton_2.setText("开始答题")
+        Ui.pushButton_2.setEnabled(True)
+        Ui.pushButton_3.setEnabled(False)
+    else:
+        msgBox = QMessageBox()
+        msgBox.setText("没有问题!")
+        msgBox.exec_()
 
 if __name__ == '__main__':
     # 解决QTDesigner界面开发时预览和实际运行效果不同
@@ -112,6 +176,11 @@ if __name__ == '__main__':
     ui.pushButton_7.clicked.connect(lambda: setSaveRecordPath(mainWindow))
     ui.pushButton.clicked.connect(lambda: selectRandomQuestion(ui))
     ui.pushButton_4.clicked.connect(lambda: getAnswer(ui))
+
+    audioRecorder = QtMultimedia.QAudioRecorder()
+    ui.pushButton_3.setEnabled(False)
+    ui.pushButton_2.clicked.connect(lambda: startRecording(ui,audioRecorder))
+    ui.pushButton_3.clicked.connect(lambda: stopRecording(ui,audioRecorder))
 
 
 

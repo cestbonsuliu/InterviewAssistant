@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 /src/record.wav
 /Test/
+/Recordings/
