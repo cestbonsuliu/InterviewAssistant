@@ -328,15 +328,29 @@
       </widget>
      </item>
      <item>
-      <widget class="QProgressBar" name="progressBar">
+      <widget class="QSlider" name="horizontalSlider">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>时长</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_9">
        <property name="font">
         <font>
          <family>微软雅黑</family>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="value">
-        <number>24</number>
+       <property name="text">
+        <string>打开录音位置</string>
        </property>
       </widget>
      </item>

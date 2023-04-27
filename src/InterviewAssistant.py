@@ -3,12 +3,13 @@ import os
 import random
 import datetime
 
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtWidgets import QApplication,QMainWindow,QMessageBox,QDesktopWidget,QFileDialog,QLineEdit
 from PyQt5 import QtCore, QtGui, QtMultimedia
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QUrl
 
 from Gui import InterviewAssistantGui
-import parse_interview_questions
+import ParseInterviewQuestions
 
 
 
@@ -49,7 +50,7 @@ def selectRandomQuestion(Ui):
 
         try:
             # 获取问题对字典列表
-            question_answer_list = parse_interview_questions.parse_markdown_file(path)
+            question_answer_list = ParseInterviewQuestions.parse_markdown_file(path)
             print(question_answer_list)
         except Exception as e:
             msgBox = QMessageBox()
@@ -84,14 +85,14 @@ def getAnswer(Ui):
     if os.path.exists(path) and question != "问题":
 
         try:
-            question_answer_list = parse_interview_questions.parse_markdown_file(path)
+            question_answer_list = ParseInterviewQuestions.parse_markdown_file(path)
             print(question_answer_list)
         except Exception as e:
             msgBox = QMessageBox()
             msgBox.setText("读取文件失败")
             msgBox.exec_()
 
-        # 获取问题获取问题答案字典元素
+        # 获取问题答案字典元素
         answer_dict = [qa for qa in question_answer_list if qa.get("question") == question][0]
         answer = answer_dict.get("answer")
         print(answer)
@@ -160,6 +161,47 @@ def stopRecording(Ui,AudioRecorder):
         msgBox.setText("没有问题!")
         msgBox.exec_()
 
+# 播放录音
+def playAudio(Ui,MediaPlayer):
+
+    play_flag = Ui.pushButton_5.text()
+    question = Ui.lineEdit.text()
+    record_path = Ui.lineEdit_2.text()
+
+    if question != "问题":
+
+        if play_flag == "播放录音" or play_flag == "继续播放":
+            if record_path :
+
+
+                print(record_path)
+            else:
+                # record_path = "../Recordings"
+                record_path = "../Recordings/Mysql 索引主要使用的哪两种数据结构？-2023-04-26-22-6.wav"
+                media_url = QUrl.fromLocalFile(record_path)
+                media_content = QMediaContent(media_url)
+                MediaPlayer.setMedia(media_content)
+                MediaPlayer.play()
+
+                Ui.pushButton_5.setText("暂停播放")
+        elif play_flag == "暂停播放":
+            print("暂停播放")
+            MediaPlayer.pause()
+            Ui.pushButton_5.setText("继续播放")
+
+
+    else:
+        msgBox = QMessageBox()
+        msgBox.setText("没有问题!")
+        msgBox.exec_()
+
+# 暂停播放
+def stopAudio(Ui):
+
+    print()
+
+
+
 if __name__ == '__main__':
     # 解决QTDesigner界面开发时预览和实际运行效果不同
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
@@ -177,12 +219,16 @@ if __name__ == '__main__':
     ui.pushButton.clicked.connect(lambda: selectRandomQuestion(ui))
     ui.pushButton_4.clicked.connect(lambda: getAnswer(ui))
 
+    # 创建录音器对象
     audioRecorder = QtMultimedia.QAudioRecorder()
     ui.pushButton_3.setEnabled(False)
     ui.pushButton_2.clicked.connect(lambda: startRecording(ui,audioRecorder))
     ui.pushButton_3.clicked.connect(lambda: stopRecording(ui,audioRecorder))
 
 
+    # 创建媒体播放器对象
+    media_player = QMediaPlayer()
+    ui.pushButton_5.clicked.connect(lambda: playAudio(ui,media_player))
 
 
     # 让窗口在屏幕中央显示,因为使用了win11状态栏透明工具,所以向上移动了30px
