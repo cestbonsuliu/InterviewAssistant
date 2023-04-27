@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>650</width>
-    <height>600</height>
+    <height>640</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -308,7 +308,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>560</y>
+      <y>602</y>
       <width>611</width>
       <height>28</height>
      </rect>
@@ -328,13 +328,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="horizontalSlider">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QLabel" name="label">
        <property name="text">
         <string>时长</string>
@@ -342,7 +335,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_9">
+      <widget class="QSlider" name="horizontalSlider">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_12">
        <property name="font">
         <font>
          <family>微软雅黑</family>
@@ -350,7 +350,7 @@
         </font>
        </property>
        <property name="text">
-        <string>打开录音位置</string>
+        <string>暂停播放</string>
        </property>
       </widget>
      </item>
@@ -386,6 +386,41 @@
        </property>
        <property name="text">
         <string>设置模型</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>21</x>
+      <y>567</y>
+      <width>611</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,6">
+     <item>
+      <widget class="QPushButton" name="pushButton_14">
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>设置录音</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_6">
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>10</pointsize>
+        </font>
        </property>
       </widget>
      </item>

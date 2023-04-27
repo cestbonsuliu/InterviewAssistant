@@ -3,7 +3,7 @@ import os
 import random
 import datetime
 
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QAudioBuffer
 from PyQt5.QtWidgets import QApplication,QMainWindow,QMessageBox,QDesktopWidget,QFileDialog,QLineEdit
 from PyQt5 import QtCore, QtGui, QtMultimedia
 from PyQt5.QtCore import QThread, pyqtSignal, QUrl
@@ -170,24 +170,24 @@ def playAudio(Ui,MediaPlayer):
 
     if question != "问题":
 
-        if play_flag == "播放录音" or play_flag == "继续播放":
+        if play_flag == "播放录音":
             if record_path :
 
 
                 print(record_path)
             else:
+
                 # record_path = "../Recordings"
                 record_path = "../Recordings/Mysql 索引主要使用的哪两种数据结构？-2023-04-26-22-6.wav"
                 media_url = QUrl.fromLocalFile(record_path)
                 media_content = QMediaContent(media_url)
                 MediaPlayer.setMedia(media_content)
-                MediaPlayer.play()
+                #MediaPlayer.play()
 
-                Ui.pushButton_5.setText("暂停播放")
-        elif play_flag == "暂停播放":
-            print("暂停播放")
-            MediaPlayer.pause()
-            Ui.pushButton_5.setText("继续播放")
+                print(f"播放后:{MediaPlayer.mediaStatus()}")
+
+        elif play_flag == "继续播放":
+            MediaPlayer.play()
 
 
     else:
@@ -196,9 +196,70 @@ def playAudio(Ui,MediaPlayer):
         msgBox.exec_()
 
 # 暂停播放
-def stopAudio(Ui):
+def stopAudio(Ui,MediaPlayer):
 
-    print()
+    question = Ui.lineEdit.text()
+
+    if question != "问题":
+
+        MediaPlayer.pause()
+        Ui.pushButton_5.setText("继续播放")
+
+    else:
+        msgBox = QMessageBox()
+        msgBox.setText("没有问题!")
+        msgBox.exec_()
+
+# 处理播放器状态
+def handleStateChanged(Ui,MediaPlayer):
+
+    state = MediaPlayer.state()
+
+    if state == QMediaPlayer.StoppedState:
+        print("播放器已停止播放")
+        Ui.pushButton_5.setText("播放录音")
+
+
+
+
+# 处理音频文件状态
+def handle_status_changed(Ui,MediaPlayer):
+
+    print(f"一般状态{MediaPlayer.mediaStatus()}")
+
+    if MediaPlayer.mediaStatus() == QMediaPlayer.LoadedMedia:
+
+        MediaPlayer.play()
+
+        # 获取当前音频文件的总时长
+        duration = MediaPlayer.duration()
+        print(duration)
+        duration = duration // 1000
+
+        Ui.label.setText(f"{duration // 60}:{duration % 60:02}")
+
+        # 设置滑块范围
+        Ui.horizontalSlider.setRange(0,duration)
+
+def handle_position_changed(Ui,MediaPlayer):
+
+    position = MediaPlayer.position()
+    print(f"position:{position}")
+
+    if position != 0:
+
+        if not Ui.horizontalSlider.isSliderDown():
+            # 如果用户未拖动滑块，则根据当前播放位置更新滑块位置
+            Ui.horizontalSlider.setValue(int(position) // 1000)
+
+
+def handle_slider_moved(Ui,MediaPlayer):
+
+    value = Ui.horizontalSlider.value()
+
+    MediaPlayer.setPosition(value * 1000)
+
+
 
 
 
@@ -228,7 +289,14 @@ if __name__ == '__main__':
 
     # 创建媒体播放器对象
     media_player = QMediaPlayer()
+    media_player.stateChanged.connect(lambda: handleStateChanged(ui,media_player))
+    media_player.mediaStatusChanged.connect(lambda: handle_status_changed(ui,media_player))
+    media_player.positionChanged.connect(lambda: handle_position_changed(ui,media_player))
     ui.pushButton_5.clicked.connect(lambda: playAudio(ui,media_player))
+    ui.pushButton_12.clicked.connect(lambda: stopAudio(ui,media_player))
+    ui.horizontalSlider.sliderMoved.connect(lambda: handle_slider_moved(ui,media_player))
+
+
 
 
     # 让窗口在屏幕中央显示,因为使用了win11状态栏透明工具,所以向上移动了30px
